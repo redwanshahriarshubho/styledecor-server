@@ -3,7 +3,13 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import { connectDB } from './config/db.js';
+
 import authRoutes from './routes/authRoutes.js';
+import serviceRoutes from './routes/serviceRoutes.js';
+import bookingRoutes from './routes/bookingRoutes.js';
+import userRoutes from './routes/userRoutes.js';
+import decoratorRoutes from './routes/decoratorRoutes.js';
+import paymentRoutes from './routes/paymentRoutes.js';
 
 dotenv.config();
 
@@ -20,6 +26,11 @@ app.use(cookieParser());
 connectDB();
 
 app.use('/api/auth', authRoutes);
+app.use('/api/services', serviceRoutes);
+app.use('/api/bookings', bookingRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/decorators', decoratorRoutes);
+app.use('/api/payments', paymentRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'StyleDecor API is running!' });
@@ -35,5 +46,5 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(`✅ Server is running on port ${PORT}`);
 });
