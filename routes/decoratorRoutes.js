@@ -3,7 +3,6 @@ import { getDB } from '../config/db.js';
 
 const router = express.Router();
 
-// Get all decorators
 router.get('/', async (req, res) => {
   try {
     const db = getDB();
@@ -28,7 +27,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Get top decorators
 router.get('/top', async (req, res) => {
   try {
     const db = getDB();
