@@ -1,0 +1,3 @@
+[submodule "styledecor-server-clean"]
+	path = styledecor-server-clean
+	url = https://github.com/redwanshahriarshubho/styledecor-server.git
