@@ -1,11 +1,23 @@
 {
   "name": "styledecor-server",
   "version": "1.0.0",
+  "description": "Backend API for StyleDecor decoration booking system",
+  "main": "index.js",
   "type": "module",
   "scripts": {
     "start": "node index.js",
-    "dev": "nodemon index.js"
+    "dev": "nodemon index.js",
+    "seed": "node seedAdmin.js"
   },
+  "keywords": [
+    "decoration",
+    "booking",
+    "api",
+    "express",
+    "mongodb"
+  ],
+  "author": "Redwan Shahriar",
+  "license": "ISC",
   "dependencies": {
     "express": "^4.18.2",
     "cors": "^2.8.5",
