@@ -5,7 +5,6 @@ import { verifyToken, verifyAdmin, verifyDecorator } from '../middleware/authMid
 
 const router = express.Router();
 
-// Create booking
 router.post('/', verifyToken, async (req, res) => {
   try {
     const db = getDB();
@@ -52,7 +51,6 @@ router.post('/', verifyToken, async (req, res) => {
   }
 });
 
-// Get user bookings
 router.get('/my-bookings', verifyToken, async (req, res) => {
   try {
     const db = getDB();
@@ -89,7 +87,6 @@ router.get('/my-bookings', verifyToken, async (req, res) => {
   }
 });
 
-// Get all bookings (Admin)
 router.get('/all', verifyToken, verifyAdmin, async (req, res) => {
   try {
     const db = getDB();
@@ -134,7 +131,88 @@ router.get('/all', verifyToken, verifyAdmin, async (req, res) => {
   }
 });
 
-// Cancel booking
+router.get('/:id', verifyToken, async (req, res) => {
+  try {
+    const db = getDB();
+    const booking = await db.collection('bookings').findOne({ 
+      _id: new ObjectId(req.params.id) 
+    });
+
+    if (!booking) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Booking not found' 
+      });
+    }
+
+    if (req.user.role !== 'admin' && booking.userEmail !== req.user.email) {
+      return res.status(403).json({ 
+        success: false, 
+        message: 'Access denied' 
+      });
+    }
+
+    res.json({
+      success: true,
+      data: booking
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      success: false, 
+      message: 'Failed to fetch booking', 
+      error: error.message 
+    });
+  }
+});
+
+router.put('/:id', verifyToken, async (req, res) => {
+  try {
+    const db = getDB();
+    const { bookingDate, location, notes } = req.body;
+    
+    const booking = await db.collection('bookings').findOne({ 
+      _id: new ObjectId(req.params.id) 
+    });
+
+    if (!booking) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Booking not found' 
+      });
+    }
+
+    if (req.user.role !== 'admin' && booking.userEmail !== req.user.email) {
+      return res.status(403).json({ 
+        success: false, 
+        message: 'Access denied' 
+      });
+    }
+
+    const updateData = {
+      bookingDate: bookingDate ? new Date(bookingDate) : booking.bookingDate,
+      location: location || booking.location,
+      notes: notes || booking.notes,
+      updatedAt: new Date()
+    };
+
+    await db.collection('bookings').updateOne(
+      { _id: new ObjectId(req.params.id) },
+      { $set: updateData }
+    );
+
+    res.json({
+      success: true,
+      message: 'Booking updated successfully'
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      success: false, 
+      message: 'Failed to update booking', 
+      error: error.message 
+    });
+  }
+});
+
 router.delete('/:id', verifyToken, async (req, res) => {
   try {
     const db = getDB();
@@ -181,7 +259,6 @@ router.delete('/:id', verifyToken, async (req, res) => {
   }
 });
 
-// Assign decorator (Admin)
 router.post('/:id/assign-decorator', verifyToken, verifyAdmin, async (req, res) => {
   try {
     const db = getDB();
@@ -234,7 +311,6 @@ router.post('/:id/assign-decorator', verifyToken, verifyAdmin, async (req, res) 
   }
 });
 
-// Update project status (Decorator)
 router.put('/:id/project-status', verifyToken, verifyDecorator, async (req, res) => {
   try {
     const db = getDB();
@@ -298,7 +374,6 @@ router.put('/:id/project-status', verifyToken, verifyDecorator, async (req, res)
   }
 });
 
-// Get decorator's assigned projects
 router.get('/decorator/assigned', verifyToken, verifyDecorator, async (req, res) => {
   try {
     const db = getDB();

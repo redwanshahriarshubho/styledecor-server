@@ -5,7 +5,6 @@ import { verifyToken, verifyAdmin } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// Get all services (with search, filter, pagination)
 router.get('/', async (req, res) => {
   try {
     const db = getDB();
@@ -63,7 +62,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Get single service
 router.get('/:id', async (req, res) => {
   try {
     const db = getDB();
@@ -91,7 +89,6 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Create service (Admin only)
 router.post('/', verifyToken, verifyAdmin, async (req, res) => {
   try {
     const db = getDB();
@@ -133,7 +130,6 @@ router.post('/', verifyToken, verifyAdmin, async (req, res) => {
   }
 });
 
-// Update service (Admin only)
 router.put('/:id', verifyToken, verifyAdmin, async (req, res) => {
   try {
     const db = getDB();
@@ -181,7 +177,6 @@ router.put('/:id', verifyToken, verifyAdmin, async (req, res) => {
   }
 });
 
-// Delete service (Admin only)
 router.delete('/:id', verifyToken, verifyAdmin, async (req, res) => {
   try {
     const db = getDB();
@@ -209,7 +204,6 @@ router.delete('/:id', verifyToken, verifyAdmin, async (req, res) => {
   }
 });
 
-// Get service categories
 router.get('/meta/categories', async (req, res) => {
   try {
     const db = getDB();

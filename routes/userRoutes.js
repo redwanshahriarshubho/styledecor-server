@@ -5,7 +5,6 @@ import { verifyToken, verifyAdmin } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// Get current user profile
 router.get('/profile', verifyToken, async (req, res) => {
   try {
     const db = getDB();
@@ -34,7 +33,37 @@ router.get('/profile', verifyToken, async (req, res) => {
   }
 });
 
-// Get all users (Admin)
+router.put('/profile', verifyToken, async (req, res) => {
+  try {
+    const db = getDB();
+    const { name, photoURL, phone, address } = req.body;
+
+    const updateData = {
+      name,
+      photoURL,
+      phone: phone || '',
+      address: address || '',
+      updatedAt: new Date()
+    };
+
+    await db.collection('users').updateOne(
+      { _id: new ObjectId(req.user.userId) },
+      { $set: updateData }
+    );
+
+    res.json({
+      success: true,
+      message: 'Profile updated successfully'
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      success: false, 
+      message: 'Failed to update profile', 
+      error: error.message 
+    });
+  }
+});
+
 router.get('/all', verifyToken, verifyAdmin, async (req, res) => {
   try {
     const db = getDB();
@@ -55,7 +84,6 @@ router.get('/all', verifyToken, verifyAdmin, async (req, res) => {
   }
 });
 
-// Make user decorator (Admin)
 router.put('/:id/make-decorator', verifyToken, verifyAdmin, async (req, res) => {
   try {
     const db = getDB();
@@ -90,7 +118,6 @@ router.put('/:id/make-decorator', verifyToken, verifyAdmin, async (req, res) => 
   }
 });
 
-// Disable/Enable user account (Admin)
 router.put('/:id/toggle-status', verifyToken, verifyAdmin, async (req, res) => {
   try {
     const db = getDB();
