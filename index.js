@@ -1,22 +1,25 @@
 // ===================================================================
-// StyleDecor Backend Server - Complete index.js
+// StyleDecor Backend Server - ES MODULE VERSION
 // ===================================================================
 // File Location: styledecor-server/index.js
 // ===================================================================
 
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const cookieParser = require('cookie-parser');
-const { connectDB, getDb } = require('./config/db');
+import dotenv from 'dotenv';
+import express from 'express';
+import cors from 'cors';
+import cookieParser from 'cookie-parser';
+import { connectDB, getDb } from './config/db.js';
+
+// Load environment variables
+dotenv.config();
 
 // Import routes
-const authRoutes = require('./routes/authRoutes');
-const serviceRoutes = require('./routes/serviceRoutes');
-const bookingRoutes = require('./routes/bookingRoutes');
-const decoratorRoutes = require('./routes/decoratorRoutes');
-const userRoutes = require('./routes/userRoutes');
-const paymentRoutes = require('./routes/paymentRoutes');
+import authRoutes from './routes/authRoutes.js';
+import serviceRoutes from './routes/serviceRoutes.js';
+import bookingRoutes from './routes/bookingRoutes.js';
+import decoratorRoutes from './routes/decoratorRoutes.js';
+import userRoutes from './routes/userRoutes.js';
+import paymentRoutes from './routes/paymentRoutes.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -26,13 +29,12 @@ const PORT = process.env.PORT || 5000;
 // ===================================================================
 
 // ✅ CORS Configuration - CRITICAL FIX
-// This allows frontend (port 5173) to communicate with backend (port 5000)
 app.use(cors({
   origin: [
-    'http://localhost:5173',  // Vite default port
-    'http://localhost:3000',  // React default port
-    'http://localhost:5174',  // Alternative Vite port
-    'http://localhost:5175'   // Another alternative
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'http://localhost:5174',
+    'http://localhost:5175'
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
@@ -44,7 +46,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// Request logging middleware (helpful for debugging)
+// Request logging middleware
 app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
   next();
@@ -78,7 +80,7 @@ app.use('/api/payments', paymentRoutes);
 // ERROR HANDLING
 // ===================================================================
 
-// 404 handler for undefined routes
+// 404 handler
 app.use((req, res) => {
   res.status(404).json({
     success: false,
@@ -120,27 +122,22 @@ const startServer = async () => {
     await connectDB();
     console.log('✅ Connected to MongoDB!');
 
-    // Get database instance
     const db = getDb();
     
-    // Create indexes for better performance
+    // Create indexes
     try {
-      // Users collection indexes
       await db.collection('users').createIndex({ email: 1 }, { unique: true });
       await db.collection('users').createIndex({ role: 1 });
       await db.collection('users').createIndex({ status: 1 });
       
-      // Services collection indexes
       await db.collection('services').createIndex({ service_category: 1 });
       await db.collection('services').createIndex({ cost: 1 });
       
-      // Bookings collection indexes
       await db.collection('bookings').createIndex({ userId: 1 });
       await db.collection('bookings').createIndex({ status: 1 });
       await db.collection('bookings').createIndex({ paymentStatus: 1 });
       await db.collection('bookings').createIndex({ bookingDate: 1 });
       
-      // Payments collection indexes
       await db.collection('payments').createIndex({ userId: 1 });
       await db.collection('payments').createIndex({ bookingId: 1 });
       await db.collection('payments').createIndex({ createdAt: -1 });
@@ -196,38 +193,29 @@ const startServer = async () => {
 // PROCESS ERROR HANDLERS
 // ===================================================================
 
-// Handle unhandled promise rejections
 process.on('unhandledRejection', (err) => {
   console.error('\n❌ Unhandled Promise Rejection:');
   console.error(err);
-  console.error('\n💡 This usually means there\'s an async operation that failed without proper error handling.');
   process.exit(1);
 });
 
-// Handle uncaught exceptions
 process.on('uncaughtException', (err) => {
   console.error('\n❌ Uncaught Exception:');
   console.error(err);
-  console.error('\n💡 This is a critical error. The server will shut down.');
   process.exit(1);
 });
 
-// Handle SIGTERM (graceful shutdown)
 process.on('SIGTERM', () => {
   console.log('\n⚠️  SIGTERM received. Shutting down gracefully...');
   process.exit(0);
 });
 
-// Handle SIGINT (Ctrl+C)
 process.on('SIGINT', () => {
   console.log('\n⚠️  SIGINT received. Shutting down gracefully...');
   process.exit(0);
 });
 
-// ===================================================================
-// START THE SERVER
-// ===================================================================
-
+// Start the server
 startServer();
 
-module.exports = app;
+export default app;
