@@ -1,50 +1,45 @@
-import { MongoClient, ServerApiVersion } from 'mongodb';
-import dotenv from 'dotenv';
+// ===================================================================
+// Database Configuration - ES MODULE VERSION
+// ===================================================================
+// File Location: styledecor-server/config/db.js
+// ===================================================================
 
-dotenv.config();
-
-const client = new MongoClient(process.env.MONGODB_URI, {
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-    deprecationErrors: true,
-  }
-});
+import { MongoClient } from 'mongodb';
 
 let db;
+let client;
 
 export const connectDB = async () => {
   try {
-    await client.connect();
-    db = client.db('styledecor');
-    console.log('✅ Connected to MongoDB!');
+    const uri = process.env.MONGODB_URI;
     
-    await createIndexes();
+    if (!uri) {
+      throw new Error('MONGODB_URI is not defined in environment variables');
+    }
+
+    client = new MongoClient(uri);
+    await client.connect();
+    
+    db = client.db('styledecor');
+    
+    console.log('✅ MongoDB Connected Successfully');
+    return db;
   } catch (error) {
-    console.error('❌ MongoDB connection error:', error);
+    console.error('❌ MongoDB Connection Error:', error.message);
     process.exit(1);
   }
 };
 
-const createIndexes = async () => {
-  try {
-    await db.collection('users').createIndex({ email: 1 }, { unique: true });
-    await db.collection('services').createIndex({ service_name: 'text' });
-    await db.collection('services').createIndex({ service_category: 1 });
-    await db.collection('bookings').createIndex({ userEmail: 1 });
-    await db.collection('bookings').createIndex({ bookingDate: 1 });
-    
-    console.log('✅ Database indexes created');
-  } catch (error) {
-    console.log('Index creation warning:', error.message);
-  }
-};
-
-export const getDB = () => {
+export const getDb = () => {
   if (!db) {
-    throw new Error('Database not initialized');
+    throw new Error('Database not initialized. Call connectDB first.');
   }
   return db;
 };
 
-export { client };
+export const closeDB = async () => {
+  if (client) {
+    await client.close();
+    console.log('MongoDB connection closed');
+  }
+};

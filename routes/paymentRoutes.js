@@ -1,27 +1,25 @@
 // ===================================================================
-// Payment Routes - Complete File
+// Payment Routes - ES MODULE VERSION
 // ===================================================================
 // File Location: styledecor-server/routes/paymentRoutes.js
 // ===================================================================
 
-const express = require('express');
+import express from 'express';
+import Stripe from 'stripe';
+import { getDb } from '../config/db.js';
+import { ObjectId } from 'mongodb';
+import { verifyToken } from '../middleware/authMiddleware.js';
+
 const router = express.Router();
-const { verifyToken } = require('../middleware/authMiddleware');
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-const { getDb } = require('../config/db');
-const { ObjectId } = require('mongodb');
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 // ===================================================================
 // CREATE PAYMENT INTENT
 // ===================================================================
-// POST /api/payments/create-payment-intent
-// Description: Create a Stripe payment intent for a booking
-// Access: Private (requires authentication)
 router.post('/create-payment-intent', verifyToken, async (req, res) => {
   try {
     const { amount, bookingId } = req.body;
 
-    // Validate amount
     if (!amount || amount <= 0) {
       return res.status(400).json({ 
         success: false,
@@ -29,7 +27,6 @@ router.post('/create-payment-intent', verifyToken, async (req, res) => {
       });
     }
 
-    // Validate booking ID
     if (!bookingId) {
       return res.status(400).json({ 
         success: false,
@@ -37,9 +34,8 @@ router.post('/create-payment-intent', verifyToken, async (req, res) => {
       });
     }
 
-    // Create payment intent with Stripe
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: Math.round(amount * 100), // Convert BDT to paisa (smallest currency unit)
+      amount: Math.round(amount * 100),
       currency: 'bdt',
       automatic_payment_methods: {
         enabled: true,
@@ -70,15 +66,11 @@ router.post('/create-payment-intent', verifyToken, async (req, res) => {
 // ===================================================================
 // CONFIRM PAYMENT
 // ===================================================================
-// POST /api/payments/confirm-payment
-// Description: Confirm payment and update booking status
-// Access: Private (requires authentication)
 router.post('/confirm-payment', verifyToken, async (req, res) => {
   try {
     const { bookingId, paymentIntentId, amount } = req.body;
     const db = getDb();
 
-    // Validate input
     if (!bookingId || !paymentIntentId || !amount) {
       return res.status(400).json({ 
         success: false,
@@ -86,7 +78,6 @@ router.post('/confirm-payment', verifyToken, async (req, res) => {
       });
     }
 
-    // Update booking payment status
     const bookingUpdate = await db.collection('bookings').updateOne(
       { _id: new ObjectId(bookingId) },
       {
@@ -106,7 +97,6 @@ router.post('/confirm-payment', verifyToken, async (req, res) => {
       });
     }
 
-    // Create payment record
     const payment = {
       userId: new ObjectId(req.user.userId),
       bookingId: new ObjectId(bookingId),
@@ -143,9 +133,6 @@ router.post('/confirm-payment', verifyToken, async (req, res) => {
 // ===================================================================
 // GET PAYMENT HISTORY (USER)
 // ===================================================================
-// GET /api/payments/history
-// Description: Get payment history for logged-in user
-// Access: Private (requires authentication)
 router.get('/history', verifyToken, async (req, res) => {
   try {
     const db = getDb();
@@ -175,12 +162,8 @@ router.get('/history', verifyToken, async (req, res) => {
 // ===================================================================
 // GET ALL PAYMENTS (ADMIN)
 // ===================================================================
-// GET /api/payments/all
-// Description: Get all payments (admin only)
-// Access: Private (Admin only)
 router.get('/all', verifyToken, async (req, res) => {
   try {
-    // Check if user is admin
     if (req.user.role !== 'admin') {
       return res.status(403).json({ 
         success: false,
@@ -196,7 +179,6 @@ router.get('/all', verifyToken, async (req, res) => {
       .sort({ createdAt: -1 })
       .toArray();
 
-    // Calculate total revenue
     const totalRevenue = payments.reduce((sum, payment) => {
       return sum + (payment.amount || 0);
     }, 0);
@@ -221,9 +203,6 @@ router.get('/all', verifyToken, async (req, res) => {
 // ===================================================================
 // GET PAYMENT BY ID
 // ===================================================================
-// GET /api/payments/:id
-// Description: Get single payment details
-// Access: Private (requires authentication)
 router.get('/:id', verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
@@ -240,7 +219,6 @@ router.get('/:id', verifyToken, async (req, res) => {
       });
     }
 
-    // Check if user owns this payment or is admin
     if (payment.userId.toString() !== req.user.userId && req.user.role !== 'admin') {
       return res.status(403).json({ 
         success: false,
@@ -263,4 +241,4 @@ router.get('/:id', verifyToken, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;
