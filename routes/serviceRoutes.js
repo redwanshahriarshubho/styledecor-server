@@ -1,13 +1,13 @@
 import express from 'express';
 import { ObjectId } from 'mongodb';
-import { getDB } from '../config/db.js';
+import { getDb } from '../config/db.js';
 import { verifyToken, verifyAdmin } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
 router.get('/', async (req, res) => {
   try {
-    const db = getDB();
+    const db = getDb();
     const { 
       search = '', 
       category = '', 
@@ -64,7 +64,7 @@ router.get('/', async (req, res) => {
 
 router.get('/:id', async (req, res) => {
   try {
-    const db = getDB();
+    const db = getDb();
     const service = await db.collection('services').findOne({ 
       _id: new ObjectId(req.params.id) 
     });
@@ -91,7 +91,7 @@ router.get('/:id', async (req, res) => {
 
 router.post('/', verifyToken, verifyAdmin, async (req, res) => {
   try {
-    const db = getDB();
+    const db = getDb();
     const { 
       service_name, 
       cost, 
@@ -132,7 +132,7 @@ router.post('/', verifyToken, verifyAdmin, async (req, res) => {
 
 router.put('/:id', verifyToken, verifyAdmin, async (req, res) => {
   try {
-    const db = getDB();
+    const db = getDb();
     const { 
       service_name, 
       cost, 
@@ -179,7 +179,7 @@ router.put('/:id', verifyToken, verifyAdmin, async (req, res) => {
 
 router.delete('/:id', verifyToken, verifyAdmin, async (req, res) => {
   try {
-    const db = getDB();
+    const db = getDb();
     const result = await db.collection('services').deleteOne({ 
       _id: new ObjectId(req.params.id) 
     });
@@ -206,7 +206,7 @@ router.delete('/:id', verifyToken, verifyAdmin, async (req, res) => {
 
 router.get('/meta/categories', async (req, res) => {
   try {
-    const db = getDB();
+    const db = getDb();
     const categories = await db.collection('services').distinct('service_category');
     
     res.json({

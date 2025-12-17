@@ -1,10 +1,10 @@
 // ===================================================================
 // Database Configuration - ES MODULE VERSION
 // ===================================================================
-// File Location: styledecor-server/config/db.js
-// ===================================================================
 
 import { MongoClient } from 'mongodb';
+import dotenv from 'dotenv';
+dotenv.config();
 
 let db;
 let client;
@@ -12,16 +12,16 @@ let client;
 export const connectDB = async () => {
   try {
     const uri = process.env.MONGODB_URI;
-    
+
     if (!uri) {
       throw new Error('MONGODB_URI is not defined in environment variables');
     }
 
     client = new MongoClient(uri);
     await client.connect();
-    
+
     db = client.db('styledecor');
-    
+
     console.log('✅ MongoDB Connected Successfully');
     return db;
   } catch (error) {

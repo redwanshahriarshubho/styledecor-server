@@ -1,11 +1,11 @@
 import express from 'express';
-import { getDB } from '../config/db.js';
+import { getDb } from '../config/db.js';
 
 const router = express.Router();
 
 router.get('/', async (req, res) => {
   try {
-    const db = getDB();
+    const db = getDb();
     const decorators = await db.collection('users')
       .find(
         { role: 'decorator', status: 'active' },
@@ -29,7 +29,7 @@ router.get('/', async (req, res) => {
 
 router.get('/top', async (req, res) => {
   try {
-    const db = getDB();
+    const db = getDb();
     const limit = parseInt(req.query.limit) || 6;
     
     const decorators = await db.collection('users')

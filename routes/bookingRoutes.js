@@ -1,13 +1,13 @@
 import express from 'express';
 import { ObjectId } from 'mongodb';
-import { getDB } from '../config/db.js';
+import { getDb } from '../config/db.js';
 import { verifyToken, verifyAdmin, verifyDecorator } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
 router.post('/', verifyToken, async (req, res) => {
   try {
-    const db = getDB();
+    const db = getDb();
     const { 
       serviceId, 
       serviceName,
@@ -53,7 +53,7 @@ router.post('/', verifyToken, async (req, res) => {
 
 router.get('/my-bookings', verifyToken, async (req, res) => {
   try {
-    const db = getDB();
+    const db = getDb();
     const { page = 1, limit = 10, sort = 'createdAt' } = req.query;
     
     const skip = (parseInt(page) - 1) * parseInt(limit);
@@ -89,7 +89,7 @@ router.get('/my-bookings', verifyToken, async (req, res) => {
 
 router.get('/all', verifyToken, verifyAdmin, async (req, res) => {
   try {
-    const db = getDB();
+    const db = getDb();
     const { 
       page = 1, 
       limit = 10, 
@@ -133,7 +133,7 @@ router.get('/all', verifyToken, verifyAdmin, async (req, res) => {
 
 router.get('/:id', verifyToken, async (req, res) => {
   try {
-    const db = getDB();
+    const db = getDb();
     const booking = await db.collection('bookings').findOne({ 
       _id: new ObjectId(req.params.id) 
     });
@@ -167,7 +167,7 @@ router.get('/:id', verifyToken, async (req, res) => {
 
 router.put('/:id', verifyToken, async (req, res) => {
   try {
-    const db = getDB();
+    const db = getDb();
     const { bookingDate, location, notes } = req.body;
     
     const booking = await db.collection('bookings').findOne({ 
@@ -215,7 +215,7 @@ router.put('/:id', verifyToken, async (req, res) => {
 
 router.delete('/:id', verifyToken, async (req, res) => {
   try {
-    const db = getDB();
+    const db = getDb();
     const booking = await db.collection('bookings').findOne({ 
       _id: new ObjectId(req.params.id) 
     });
@@ -261,7 +261,7 @@ router.delete('/:id', verifyToken, async (req, res) => {
 
 router.post('/:id/assign-decorator', verifyToken, verifyAdmin, async (req, res) => {
   try {
-    const db = getDB();
+    const db = getDb();
     const { decoratorId, decoratorName, decoratorEmail } = req.body;
 
     const booking = await db.collection('bookings').findOne({ 
@@ -313,7 +313,7 @@ router.post('/:id/assign-decorator', verifyToken, verifyAdmin, async (req, res) 
 
 router.put('/:id/project-status', verifyToken, verifyDecorator, async (req, res) => {
   try {
-    const db = getDB();
+    const db = getDb();
     const { projectStatus } = req.body;
 
     const validStatuses = [
@@ -376,7 +376,7 @@ router.put('/:id/project-status', verifyToken, verifyDecorator, async (req, res)
 
 router.get('/decorator/assigned', verifyToken, verifyDecorator, async (req, res) => {
   try {
-    const db = getDB();
+    const db = getDb();
     const bookings = await db.collection('bookings')
       .find({ 
         'assignedDecorator.email': req.user.email 

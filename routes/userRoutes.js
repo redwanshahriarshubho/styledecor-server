@@ -1,13 +1,13 @@
 import express from 'express';
 import { ObjectId } from 'mongodb';
-import { getDB } from '../config/db.js';
+import { getDb } from '../config/db.js';
 import { verifyToken, verifyAdmin } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
 router.get('/profile', verifyToken, async (req, res) => {
   try {
-    const db = getDB();
+    const db = getDb();
     const user = await db.collection('users').findOne(
       { _id: new ObjectId(req.user.userId) },
       { projection: { password: 0 } }
@@ -35,7 +35,7 @@ router.get('/profile', verifyToken, async (req, res) => {
 
 router.put('/profile', verifyToken, async (req, res) => {
   try {
-    const db = getDB();
+    const db = getDb();
     const { name, photoURL, phone, address } = req.body;
 
     const updateData = {
@@ -66,7 +66,7 @@ router.put('/profile', verifyToken, async (req, res) => {
 
 router.get('/all', verifyToken, verifyAdmin, async (req, res) => {
   try {
-    const db = getDB();
+    const db = getDb();
     const users = await db.collection('users')
       .find({}, { projection: { password: 0 } })
       .toArray();
@@ -86,7 +86,7 @@ router.get('/all', verifyToken, verifyAdmin, async (req, res) => {
 
 router.put('/:id/make-decorator', verifyToken, verifyAdmin, async (req, res) => {
   try {
-    const db = getDB();
+    const db = getDb();
     const { specialty, experience, rating } = req.body;
 
     await db.collection('users').updateOne(
@@ -120,7 +120,7 @@ router.put('/:id/make-decorator', verifyToken, verifyAdmin, async (req, res) => 
 
 router.put('/:id/toggle-status', verifyToken, verifyAdmin, async (req, res) => {
   try {
-    const db = getDB();
+    const db = getDb();
     const user = await db.collection('users').findOne({ 
       _id: new ObjectId(req.params.id) 
     });
