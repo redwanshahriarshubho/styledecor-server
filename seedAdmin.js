@@ -129,7 +129,7 @@ const seedAdmin = async () => {
 
     const decoratorPassword = await bcrypt.hash('Decorator@123', 10);
     const decorator = {
-      name: 'Sarah Ahmed',
+      name: 'Redwan Shahriar',
       email: 'decorator@styledecor.com',
       password: decoratorPassword,
       photoURL: 'https://i.ibb.co/XYZ1234/decorator.png',
@@ -147,7 +147,7 @@ const seedAdmin = async () => {
     await db.collection('users').insertOne(decorator);
     console.log('✅ Sample decorator created successfully!');
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.log('👤 Decorator Name: Sarah Ahmed');
+    console.log('👤 Decorator Name: Redwan Shahriar');
     console.log('📧 Decorator Email: decorator@styledecor.com');
     console.log('🔑 Decorator Password: Decorator@123');
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
@@ -164,70 +164,3 @@ const seedAdmin = async () => {
 };
 
 seedAdmin();
-```
-
----
-
-### **FILE 13: .gitignore**
-
-**File: `styledecor-server/.gitignore`**
-```
-# Dependencies
-node_modules/
-package-lock.json
-
-# Environment variables
-.env
-.env.local
-.env.production
-.env.test
-
-# Logs
-logs/
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-lerna-debug.log*
-pnpm-debug.log*
-
-# OS files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-desktop.ini
-
-# IDE
-.vscode/
-.vscode/*
-!.vscode/extensions.json
-.idea/
-.idea/*
-*.swp
-*.swo
-*.swn
-*~
-.project
-.classpath
-.settings/
-
-# Build outputs
-dist/
-build/
-out/
-
-# Temporary files
-tmp/
-temp/
-*.tmp
-
-# Testing
-coverage/
-.nyc_output/
-
-# Other
-.cache/
