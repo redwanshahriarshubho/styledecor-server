@@ -1,79 +1,67 @@
-// ===================================================================
-// StyleDecor Backend Server - ES MODULE VERSION
-// ===================================================================
-
-import dotenv from 'dotenv';
+// File: index.js
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import dotenv from 'dotenv';
 import { connectDB, getDb } from './config/db.js';
 
-// Load environment variables
-dotenv.config();
+// -------- ROUTES --------
+import authRoutes from './routes/auth.routes.js';
+import serviceRoutes from './routes/service.routes.js';
+import bookingsRoutes from './routes/bookings.routes.js';
+import decoratorsRoutes from './routes/decorators.routes.js';
+import usersRoutes from './routes/users.routes.js';
+import paymentsRoutes from './routes/payment.routes.js';
 
-// Import routes
-import authRoutes from './routes/authRoutes.js';
-import serviceRoutes from './routes/serviceRoutes.js';
-import bookingRoutes from './routes/bookingRoutes.js';
-import decoratorRoutes from './routes/decoratorRoutes.js';
-import userRoutes from './routes/userRoutes.js';
-import paymentRoutes from './routes/paymentRoutes.js';
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// ===================================================================
-// MIDDLEWARE CONFIGURATION
-// ===================================================================
-
+// ===============================
+// MIDDLEWARE
+// ===============================
 app.use(cors({
-  origin: [
-    'http://localhost:5173',
-    'http://localhost:3000',
-    'http://localhost:5174',
-    'http://localhost:5175'
-  ],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  credentials: true
 }));
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// Request logging
+// Request logger
 app.use((req, res, next) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+  console.log(`${new Date().toISOString()} | ${req.method} ${req.originalUrl}`);
   next();
 });
 
-// ===================================================================
-// ROUTES
-// ===================================================================
-
+// ===============================
+// ROOT ROUTE
+// ===============================
 app.get('/', (req, res) => {
   res.json({
     success: true,
-    message: 'StyleDecor API is running!',
+    message: 'StyleDecor API is running 🚀',
     developer: 'Redwan Shahriar',
     version: '1.0.0',
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development'
+    environment: process.env.NODE_ENV || 'development',
+    time: new Date().toISOString()
   });
 });
 
+// ===============================
+// API ROUTES
+// ===============================
 app.use('/api/auth', authRoutes);
 app.use('/api/services', serviceRoutes);
-app.use('/api/bookings', bookingRoutes);
-app.use('/api/decorators', decoratorRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/payments', paymentRoutes);
+app.use('/api/bookings', bookingsRoutes);
+app.use('/api/decorators', decoratorsRoutes);
+app.use('/api/users', usersRoutes);
+app.use('/api/payments', paymentsRoutes);
 
-// ===================================================================
-// ERROR HANDLING
-// ===================================================================
-
+// ===============================
+// 404 HANDLER
+// ===============================
 app.use((req, res) => {
   res.status(404).json({
     success: false,
@@ -81,65 +69,73 @@ app.use((req, res) => {
   });
 });
 
+// ===============================
+// GLOBAL ERROR HANDLER
+// ===============================
 app.use((err, req, res, next) => {
   console.error('❌ Error:', err);
   res.status(err.status || 500).json({
     success: false,
     message: err.message || 'Internal server error',
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack, error: err })
+    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
   });
 });
 
-// ===================================================================
-// DATABASE CONNECTION & SERVER START
-// ===================================================================
-
+// ===============================
+// START SERVER
+// ===============================
 const startServer = async () => {
   try {
     await connectDB();
-    console.log('✅ Connected to MongoDB!');
-
     const db = getDb();
 
-    // Create indexes (users/services/bookings/payments)
+    // Ensure indexes
     try {
       await db.collection('users').createIndex({ email: 1 }, { unique: true });
-      await db.collection('users').createIndex({ role: 1 });
-      await db.collection('users').createIndex({ status: 1 });
       await db.collection('services').createIndex({ service_category: 1 });
-      await db.collection('services').createIndex({ cost: 1 });
       await db.collection('bookings').createIndex({ userId: 1 });
-      await db.collection('bookings').createIndex({ status: 1 });
-      await db.collection('bookings').createIndex({ paymentStatus: 1 });
-      await db.collection('bookings').createIndex({ bookingDate: 1 });
-      await db.collection('payments').createIndex({ userId: 1 });
-      await db.collection('payments').createIndex({ bookingId: 1 });
-      await db.collection('payments').createIndex({ createdAt: -1 });
-
-      console.log('✅ Database indexes created');
+      await db.collection('payments').createIndex({ bookingId: 1, createdAt: -1 });
+      console.log('✅ Database indexes ensured');
     } catch (indexError) {
-      console.log('⚠️  Some indexes may already exist:', indexError.message);
+      console.log('⚠️ Index creation warning:', indexError.message);
     }
 
     app.listen(PORT, () => {
-      console.log(`\n✅ SERVER IS RUNNING on http://localhost:${PORT}`);
+      console.log(`✅ SERVER IS RUNNING on http://localhost:${PORT}`);
     });
 
   } catch (error) {
-    console.error('\n❌ Failed to start server:', error);
+    console.error('❌ Failed to start server:', error);
     process.exit(1);
   }
 };
 
-// ===================================================================
-// PROCESS ERROR HANDLERS
-// ===================================================================
+// ===============================
+// PROCESS ERROR HANDLING
+// ===============================
+process.on('unhandledRejection', err => {
+  console.error('❌ Unhandled Rejection:', err);
+  process.exit(1);
+});
 
-process.on('unhandledRejection', (err) => { console.error(err); process.exit(1); });
-process.on('uncaughtException', (err) => { console.error(err); process.exit(1); });
-process.on('SIGTERM', () => { console.log('SIGTERM received'); process.exit(0); });
-process.on('SIGINT', () => { console.log('SIGINT received'); process.exit(0); });
+process.on('uncaughtException', err => {
+  console.error('❌ Uncaught Exception:', err);
+  process.exit(1);
+});
 
+process.on('SIGTERM', () => {
+  console.log('🛑 SIGTERM received');
+  process.exit(0);
+});
+
+process.on('SIGINT', () => {
+  console.log('🛑 SIGINT received');
+  process.exit(0);
+});
+
+// ===============================
+// INIT
+// ===============================
 startServer();
 
 export default app;
