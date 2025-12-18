@@ -1,36 +1,32 @@
 import { MongoClient } from 'mongodb';
 
-const uri = "mongodb://127.0.0.1:27017/styledecor"; // Local MongoDB
+const uri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/styledecor';
+const client = new MongoClient(uri);
 
-const client = new MongoClient(uri, {
-  serverSelectionTimeoutMS: 5000, // 5 seconds timeout
-});
-
-async function testLocalConnection() {
+async function testConnection() {
   try {
-    console.log('🔄 Connecting to local MongoDB...');
-    
+    console.log('🔄 Connecting to MongoDB...');
     await client.connect();
-    console.log('✅ MongoDB Connected Successfully!');
 
-    // Ping database
-    await client.db("admin").command({ ping: 1 });
-    console.log('✅ Ping successful!');
+    await client.db('admin').command({ ping: 1 });
+    console.log('✅ MongoDB ping successful');
 
-    // List collections
-    const db = client.db('styledecor');
-    const collections = await db.listCollections().toArray();
-    console.log('📦 Collections:', collections.map(c => c.name));
+    const collections = await client
+      .db('styledecor')
+      .listCollections()
+      .toArray();
 
-    console.log('🎉 Local MongoDB is working perfectly!');
-    
+    console.log(
+      '📦 Collections:',
+      collections.map(c => c.name)
+    );
+
   } catch (error) {
-    console.error('❌ Connection Error:', error.message);
-    console.error('Full Error:', error);
+    console.error('❌ MongoDB error:', error);
   } finally {
     await client.close();
     console.log('🔌 Connection closed');
   }
 }
 
-testLocalConnection();
+testConnection();
